@@ -13,26 +13,24 @@ int* dpad = D_PAD_0_BASE;
 
 //Draw an square of 2x2
 void drawSquare(int coords, int color){    //Draw 2x2 squares in certain coords
-    int* p = coords + leds;
-    *p = color;
-    *(p+1) = color;
-    *(p+H) = color;
-    *(p+H+1) = color;
+    int* p = coords + leds;                    // Y * Width + X
+    *p = color;                                // Coords % Width = X 
+    *(p+1) = color;                            // Coords / Width = Y
+    *(p+W) = color;
+    *(p+W+1) = color;
 }
 
 //Check with button was pressed in the pad
 //Allow the movement of snakein certain directions
 void checkPad(int* dir){
-    if(dpad[0] && *dir != 2*H) *dir = -2*H;
-    else if(dpad[1] && *dir != -2*H) *dir = 2*H;
+    if(dpad[0] && *dir != 2*W) *dir = -2*W;
+    else if(dpad[1] && *dir != -2*W) *dir = 2*W;
     else if(dpad[2] && *dir != 2) *dir = -2;
     else if(dpad[3] && *dir != -2) *dir = 2;
 }
 
 //Por hacer
 void summonApple(){
-    apple = (rand()%H/2)*W*2 + rand()%W/2*2;
-    drawSquare(apple, 0x00FF00);
 }
 
 //Por hacer
@@ -46,10 +44,23 @@ void startSnake(int tail){
         drawSquare(snake[i], 0xFF0000);
 }
 
+int screenLimits(int dir){
+    if(dir == -2*W && snake[0]/W == 0)    //Up wall: X + max-Y 
+        return snake[0]%H + (H-2)*W;    
+    if(dir == 2*W && snake[0]/W == H-2)    //Down wall: X + min-Y
+        return snake[0]%H;
+    if(dir == -2 && snake[0]%W == 0)    //Left wall Y: + max-X
+        return (snake[0]/W)*W + W-2;
+    if(dir == 2 && snake[0]%W == W-2)    //Right wall: Y + min-X
+        return (snake[0]/W)*W;
+
+    return snake[0] + dir;
+}
+
 //Draw the snake and update the coords of each part
 void drawSnake(int tail, int dir){
     int next = snake[0];
-    snake[0] += dir;
+    snake[0] = screenLimits(dir);
     drawSquare(snake[0], 0xFF0000);
     drawSquare(snake[tail], 0);
     
@@ -86,7 +97,7 @@ void main(void){
         checkPad(&dir);
         if(wait++ < 2000) continue;    //Cronometer :v
         wait = 0;
-        drawSnake(tail, dir);
+        drawSnake(tail, dir);    
     }
 
 }
