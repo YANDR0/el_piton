@@ -7,7 +7,6 @@
 
 //Global variables
 int snake[H*W];
-int tail = 0;
 int apple = 0;
 int* leds = LED_MATRIX_0_BASE;
 int* dpad = D_PAD_0_BASE;
@@ -43,7 +42,7 @@ void drawSnake(int tail, int dir){
     drawSquare(snake[0], 0xFF0000);
     snake[0] += dir;
     
-    for(int i = 1; i < tail; i++){
+    for(int i = 1; i <= tail; i++){
         int temp = snake[i];
         drawSquare(snake[i], 0xFF0000);
         snake[i] = next;
@@ -63,20 +62,20 @@ void main(void){
     snake[0] = (H/2-2)*W + (W/2-2);    //y*H + x
     snake[1] = (H/2-2)*W + (W/2-4);    //y*H + x
     snake[2] = (H/2-2)*W + (W/2-6);    //y*H + x
-    tail = 2;
+    int tail = 2;
     int dir = 0;
     int wait = 2000;
     clear();
     
-    while(dir == 0) checkPad(&dir);    //Esperar a tocar botón para iniciar
+    //while(dir == 0) checkPad(&dir);    //Esperar a tocar botón para iniciar
     
     
     while(1){    //Game loop
         checkPad(&dir);
         if(wait++ < 2000) continue;
         wait = 0;
-        drawSquare(snake[tail], 0);
-        drawSnake(tail+1, dir);
+        drawSnake(tail, dir);
+        
     }
 
 }
