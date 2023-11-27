@@ -11,7 +11,9 @@
 //Global variables
 int snake[H*W/4];    //Position of snake's parts
 int apple = 0;    //Position of apple
+int walls[3] = {-4, -4, -4};
 int points = 0;
+int randomness = 0;
 int* leds = LED_MATRIX_0_BASE;
 int* dpad = D_PAD_0_BASE;
 
@@ -51,11 +53,27 @@ void summonApple(tail){
     int flag = 0;
     do{
         flag = 0;
-        apple = ((rand()%H)/2*2)*W + (rand()%W)/2*2;    //Generation of coords
+        apple = (((rand()+randomness)%H)/2*2)*W + ((rand()+randomness)%W)/2*2;    //Generation of coords
         for(int i = 0; i <= tail; i++)    //Cycle to avoid apples over the snake
             flag += snake[i] == apple? 1: 0;
     }while(flag);
     drawSquare(apple, GREEN);    //Show apple
+    summonWalls(tail);
+}
+
+//Creation of wall by randomness
+void summonWalls(tail){
+    for(int i = 0; i < 3; i++){
+        drawSquare(walls[i], 0);
+        int flag = 0;
+        do{
+            flag = 0;
+            walls[i] = (((rand()+randomness)%H)/2*2)*W + ((rand()+randomness)%W)/2*2;    //Generation of coords
+            for(int j = 0; j <= tail; j++)    //Cycle to avoid apples over the snake
+                flag += snake[j] == walls[i]? 1: 0;
+        }while(flag);
+        drawSquare(walls[i], 0xFFFFFF);    //Show  wall
+    }
 }
 
 //Draw the snake and update the coords of each part
@@ -65,6 +83,10 @@ int drawSnake(int tail, int dir){
     if(snake[tail] >= 0)    //Avoid delete in case of eat an apple
         drawSquare(snake[tail], 0);    //Delete tail
     drawSquare(snake[0], RED);    //Draw head
+    
+    for(int i = 0; i < 3; i++)
+        if(snake[0] == walls[i])
+            return -1;
     
     for(int i = 1; i <= tail; i++){    //Update coords of snake
         next ^= snake[i];
@@ -99,11 +121,13 @@ void main(void){
         drawSquare(snake[i], RED);
     
     while(dir == 0) checkPad(&dir, lastDir);    //Wait button to start
+    randomness += dir;
     summonApple(tail);
     
     while(1){    //Game loop
         checkPad(&dir, lastDir);
         if(wait++ < 1000) continue;    //Cronometer :v
+        randomness += dir;
         lastDir = dir;
         wait = 0;
         tail = drawSnake(tail, dir);
