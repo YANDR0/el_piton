@@ -121,6 +121,7 @@ void main(void){
         drawSquare(snake[i], RED);
     
     while(dir == 0) checkPad(&dir, lastDir);    //Wait button to start
+    randomness %= W;
     randomness += dir;
     summonApple(tail);
     
